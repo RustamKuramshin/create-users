@@ -6,7 +6,9 @@ from typing import List
 
 from DbUtils import DbUtils
 from Idp import Idp
+from Realm import Realm
 from User import User
+from Users import Users
 
 
 def get_users() -> List[User]:
@@ -26,6 +28,10 @@ if __name__ == '__main__':
 
     dbs = DbUtils.get_db_set(p)
 
-    Idp.prepare(dbs["nn_idp"].cursor, users)
+    Users.prepare(dbs["users"], users)
+
+    Idp.prepare(dbs["idp"], users)
+
+    Realm.prepare(dbs["realm"], users)
 
     DbUtils.close_db_set(dbs)
