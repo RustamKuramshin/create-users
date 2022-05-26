@@ -38,3 +38,19 @@ class DbUtils:
             conn = db.connection
             if conn is not None:
                 conn.close()
+
+    @staticmethod
+    def is_record_exist(db: Db, table: str, column: str, record_id: int) -> bool:
+        sql_select = 'SELECT * FROM {table} t WHERE t.{column} = %s'.format(table=table, column=column)
+        print(sql_select)
+        db.cursor.execute(sql_select, [record_id])
+        rows = db.cursor.fetchall()
+        res = len(rows) == 1
+
+        if res:
+            print(f'В таблице {table} найдена запись с record_id {record_id}'.format(table=table, record_id=record_id))
+        else:
+            print(
+                f'В таблице {table} НЕ найдена запись с record_id {record_id}'.format(table=table, record_id=record_id))
+
+        return res

@@ -31,4 +31,4 @@ class User:
         self.password_hash = password_hash
 
     def __repr__(self):
-        return f'User(name={self.user_name}, email={self.email}, role={self.role_id})'
+        return f'User(user_name={self.user_name}, user_surname={self.user_surname}, user_id={self.user_id})'
