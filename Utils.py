@@ -1,4 +1,6 @@
+import argparse
 import json
+from argparse import Namespace
 from typing import List
 
 from entitys.Role import Role
@@ -28,3 +30,17 @@ def get_roles() -> List[Role]:
         roles_list.append(Role(**r))
 
     return roles_list
+
+
+def get_command_line_args() -> Namespace:
+    parser = argparse.ArgumentParser(description="User management util")
+    parser.add_argument("--dry-run",
+                        dest="dry_run",
+                        help='Запуск в режиме проверки, без commit-а в БД',
+                        action='store_true')
+    parser.add_argument("--exclude-services",
+                        nargs='+',
+                        help='Список сервисов, которые нужно исключить в процессе выполнения скрипта',
+                        required=False)
+
+    return parser.parse_args()

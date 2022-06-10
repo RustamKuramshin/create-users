@@ -1,5 +1,5 @@
-from typing import List
 from datetime import datetime
+from typing import List
 
 from db.Db import Db
 from db.DbUtils import DbUtils

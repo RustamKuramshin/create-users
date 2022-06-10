@@ -23,7 +23,11 @@ class DbUtils:
         return db
 
     @staticmethod
-    def get_db_set(parser: ConfigParser) -> Dict[str, Db]:
+    def get_db_set(config_path: str) -> Dict[str, Db]:
+
+        parser = ConfigParser()
+        parser.read(config_path)
+
         db_set: Dict[str, Db] = {}
         try:
             for section in parser.sections():
