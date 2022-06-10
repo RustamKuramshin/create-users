@@ -1,63 +1,44 @@
 #!/usr/bin/python
 
-import json
-from configparser import ConfigParser
-from typing import List
 import argparse
+from configparser import ConfigParser
 
+from Utils import get_users, get_roles
 from db.DbUtils import DbUtils
 from services.Idp import Idp
 from services.Realm import Realm
-from entitys.Role import Role
-from entitys.User import User
 from services.Users import Users
 
-parser = argparse.ArgumentParser(description="User management util")
-parser.add_argument("--dry-run", dest="dry_run",
-                    help='Запуск в режиме проверки, без commit-а в БД',
-                    action='store_true')
-parser.add_argument("--exclude-services", nargs='+',
-                    help='Список сервисов, которые нужно исключить в процессе выполнения скрипта',
-                    required=False)
-args = parser.parse_args()
-print(f'Переданные аргументы {args}')
-DbUtils.dry_run = args.dry_run
-
-
-def get_users() -> List[User]:
-    users_list: List[User] = []
-    users_json = json.load(open('users.json'))
-    for u in users_json:
-        user: User = User(**u)
-        validate_user(user)
-        users_list.append(user)
-
-    return users_list
-
-
-def validate_user(user: User):
-    if (user.role_id is None) and (user.role_name is None):
-        raise Exception("Роль пользователя и её id не могут быть одновременно null")
-
-
-def get_roles() -> List[Role]:
-    roles_list: List[Role] = []
-    roles_json = json.load(open('roles.json'))
-    for r in roles_json:
-        roles_list.append(Role(**r))
-
-    return roles_list
-
-
 if __name__ == '__main__':
+
+    # Чтение аргументов командной строки
+    parser = argparse.ArgumentParser(description="User management util")
+    parser.add_argument("--dry-run",
+                        dest="dry_run",
+                        help='Запуск в режиме проверки, без commit-а в БД',
+                        action='store_true')
+    parser.add_argument("--exclude-services",
+                        nargs='+',
+                        help='Список сервисов, которые нужно исключить в процессе выполнения скрипта',
+                        required=False)
+    args = parser.parse_args()
+    print(f'Переданные аргументы командной строки {args}')
+
+    # Установка режима dry-run
+    DbUtils.dry_run = args.dry_run
+
+    # Чтение конфига подключения к базам данных
     p = ConfigParser()
     p.read('database.ini')
 
+    # Создание пулла коннекций БД
+    dbs = DbUtils.get_db_set(p)
+
+    # Чтение списков данных
     users = get_users()
     roles = get_roles()
 
-    dbs = DbUtils.get_db_set(p)
-
+    # Выполнение логики по каждому сервису
     if "users" not in args.exclude_services:
         Users.prepare(dbs["users"], users)
 
@@ -67,4 +48,5 @@ if __name__ == '__main__':
     if "realm" not in args.exclude_services:
         Realm.prepare(dbs["realm"], users, roles)
 
+    # Закрытие пулла коннекций БД
     DbUtils.close_db_set(dbs)
