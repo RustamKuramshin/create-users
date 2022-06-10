@@ -65,7 +65,7 @@ class DbUtils:
         db.cursor.execute(sql_select)
         max_id = int(db.cursor.fetchall()[0]['max'])
 
-        print(f'Последний {column} таблицы {table} равен {max_id}')
+        print(f'Последний id поля {column} в таблице {table} равен {max_id}')
 
         return max_id
 

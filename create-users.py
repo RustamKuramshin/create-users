@@ -13,7 +13,12 @@ from entitys.User import User
 from services.Users import Users
 
 parser = argparse.ArgumentParser(description="User management util")
-parser.add_argument("--dry-run", dest="dry_run", action='store_true')
+parser.add_argument("--dry-run", dest="dry_run",
+                    help='Запуск в режиме проверки, без commit-а в БД',
+                    action='store_true')
+parser.add_argument("--exclude-services", nargs='+',
+                    help='Список сервисов, которые нужно исключить в процессе выполнения скрипта',
+                    required=False)
 args = parser.parse_args()
 print(f'Переданные аргументы {args}')
 DbUtils.dry_run = args.dry_run
@@ -53,10 +58,13 @@ if __name__ == '__main__':
 
     dbs = DbUtils.get_db_set(p)
 
-    Users.prepare(dbs["users"], users)
+    if "users" not in args.exclude_services:
+        Users.prepare(dbs["users"], users)
 
-    Idp.prepare(dbs["idp"], users)
+    if "idp" not in args.exclude_services:
+        Idp.prepare(dbs["idp"], users)
 
-    Realm.prepare(dbs["realm"], users, roles)
+    if "realm" not in args.exclude_services:
+        Realm.prepare(dbs["realm"], users, roles)
 
     DbUtils.close_db_set(dbs)

@@ -2,7 +2,7 @@
 
 Запуск (сначала нужно прописать креды в database.ini, подложить roles.json и users.json)
 ```shell
-python3 Main.py
+python3 create-users.py
 ```
 
 Перед запуском скрипта, нужно установить зависимости (возможно список не полный):
@@ -18,5 +18,5 @@ sudo apt install postgresql-client-12
 
 Есть режим dry-run
 ```shell
-python3 Main.py --dry-run
+python3 create-users.py --dry-run
 ```
