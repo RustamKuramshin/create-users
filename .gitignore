@@ -225,4 +225,5 @@ cython_debug/
 .idea
 database.ini
 users.json
+roles.json
 

@@ -1,8 +1,8 @@
 from typing import List
 
-from Db import Db
-from DbUtils import DbUtils
-from User import User
+from db.Db import Db
+from db.DbUtils import DbUtils
+from entitys.User import User
 
 
 class Idp:
@@ -14,7 +14,9 @@ class Idp:
 
         for user in users:
             if not DbUtils.is_record_exist(db, "identity", "user_id", user.user_id):
-                db.cursor.execute(sql_insert_identity, (user.user_id, user.realm_id, user.email, user.password_hash))
+                db.cursor.execute(sql_insert_identity, (user.user_id, user.realm_id, user.login, user.password_hash))
                 print('Вставлен юзер - {}'.format(user))
 
-        db.connection.commit()
+        DbUtils.alter_sequence(db, "identity", "user_id")
+
+        DbUtils.commit(db)

@@ -4,10 +4,13 @@ from typing import Dict
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-from Db import Db
+from db.Db import Db
 
 
 class DbUtils:
+
+    dry_run: bool
+
     @staticmethod
     def get_db_config(db_name, parser: ConfigParser):
         db = {}
@@ -40,17 +43,50 @@ class DbUtils:
                 conn.close()
 
     @staticmethod
-    def is_record_exist(db: Db, table: str, column: str, record_id: int) -> bool:
+    def is_record_exist(db: Db, table: str, column: str, value) -> bool:
         sql_select = 'SELECT * FROM {table} t WHERE t.{column} = %s'.format(table=table, column=column)
         print(sql_select)
-        db.cursor.execute(sql_select, [record_id])
+        db.cursor.execute(sql_select, [value])
         rows = db.cursor.fetchall()
         res = len(rows) == 1
 
         if res:
-            print(f'В таблице {table} найдена запись с record_id {record_id}'.format(table=table, record_id=record_id))
+            print(f'В таблицу {table} НЕ будет добавлена запись с value {value}'.format(table=table, value=value))
         else:
             print(
-                f'В таблице {table} НЕ найдена запись с record_id {record_id}'.format(table=table, record_id=record_id))
+                f'В таблицу {table} будет добавлена запись с value {value}'.format(table=table, value=value))
 
         return res
+
+    @staticmethod
+    def get_table_max_pk_id(db: Db, table: str, column: str) -> int:
+        sql_select = 'SELECT max({column}) FROM {table}'.format(column=column, table=table)
+        print(sql_select)
+        db.cursor.execute(sql_select)
+        max_id = int(db.cursor.fetchall()[0]['max'])
+
+        print(f'Последний {column} таблицы {table} равен {max_id}')
+
+        return max_id
+
+    @staticmethod
+    def alter_sequence(db: Db, table: str, column: str):
+
+        last_id = DbUtils.get_table_max_pk_id(db, table, column)
+
+        sql_alter_sequence = 'ALTER SEQUENCE {seq} RESTART WITH {last_id}'.format(
+            seq=f'{table}_{column}_seq',
+            last_id=last_id
+        )
+
+        print(sql_alter_sequence)
+
+        db.cursor.execute(sql_alter_sequence)
+
+    @staticmethod
+    def commit(db: Db):
+        if DbUtils.dry_run:
+            db.connection.rollback()
+        else:
+            db.connection.commit()
+
